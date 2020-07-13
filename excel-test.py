@@ -8,6 +8,7 @@ print(names)
 worksheet=workbook.sheet_by_index(0)
 print(worksheet.name)
 
+
 excel_path='test.xls'#文件路径
 #excel_path=unicode('D:\\测试.xls','utf-8')#识别中文路径
 rbook = xlrd.open_workbook(excel_path,formatting_info=True)#打开文件
