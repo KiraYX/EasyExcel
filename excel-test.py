@@ -9,18 +9,29 @@ from fuzzywuzzy import process
 
 def main():
     srcsheet = srcRead()
-    destsheet = destRead()
+    destbook = destRead()
+    destsheet = assetLiabSheet(destbook)
+    writebook = copy.copy(destbook)
+    writesheet = writebook.get_sheet(1)
+    print(writesheet)
     for i in range(1,53):
         [row,col] = findInTable(srcsheet,str(i))
         if isValueExist(srcsheet,row,col):
             # print(srcsheet.cell_value(row,col+1),srcsheet.cell_value(row,col+2))
             srclabel = getSrcLabel(srcsheet,row,col)
-            print('i='+str(i))
-            print(srclabel)
-            [xpos,ypos] = findLabelInDest(srclabel)
-
-def findLabelInDest(srclabel):
-    pass
+            print('行次='+str(i))
+            print('原科目名称：'+srclabel)
+            periodEnd = srcsheet.cell_value(row,col+1)
+            yearStart = srcsheet.cell_value(row,col+2)
+            print('periodEnd = '+str(periodEnd),'yearStart = '+str(yearStart))
+            [xpos,ypos] = findInTable(destsheet,srclabel)
+            destlabel = destsheet.cell_value(xpos,ypos)
+            print('目标表科目：'+destlabel)
+            print(xpos,ypos)
+            writesheet.write(xpos,ypos+2,periodEnd)
+            writesheet.write(xpos,ypos+3,yearStart)
+            print('--------------------------')
+    writebook.save('output.xls')
 
 def getSrcLabel(sheet,row,col):
     label = sheet.cell_value(row,col-1)
@@ -44,15 +55,25 @@ def findInTable(sheet,key):
     srccols = sheet.ncols
     for r in range(0,srcrows):
         for c in range(0,srccols):
-            if str(sheet.cell_value(r,c)) == key:
-                # print('found index')
-                # print(sheet.cell_value(r,c+1))
+            similarity = fz.ratio(str(sheet.cell_value(r,c)),key)
+            if similarity > 80:
+                print('similarity is '+str(similarity))
+                # print('cell value next to num = '+str(sheet.cell_value(r,c+1)))
+                # print('found label '+key+' position is '+str(r)+' '+str(c))
                 return [r,c]
+            else:
+                continue
+    print('(!) cannot find same label in dest')
+    return [0,0]
 def destRead():
     destfile = '财务报表报送与信息采集（适用未执行新金融准则、新收入准则和新租赁准则的一般企业）.xls'
     destbook = xlrd.open_workbook(destfile, formatting_info=True)
+    return destbook
+
+def assetLiabSheet(destbook):
     destsheet = destbook.sheet_by_name("资产负债表")
     return destsheet
+
 def srcRead():
     srcfile = '阿尔泰.xls'
     srcbook = xlrd.open_workbook(srcfile, formatting_info=True)
