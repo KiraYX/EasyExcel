@@ -45,18 +45,28 @@ def isValueExist(sheet,row,col):
     # value2 = sheet.cell_value(row,col+2)
     # print(cell1,cell2)
     # print(value1,value2)
-    if cell1.ctype == xlrd.XL_CELL_BLANK and cell2.ctype == xlrd.XL_CELL_BLANK:  
+    if cell1.ctype == xlrd.XL_CELL_BLANK and cell2.ctype == xlrd.XL_CELL_BLANK:
+        print('There is no value in both cells')
         return False
     else:
         return True
-    
+def replaceByDict(key):
+    print(key)
+    d = {'所有者权益(或股东权益)合计':'所有者权益（或股东权益）合计',
+    '预收账款':'预收款项'}
+    if key in d.keys():
+        return d.get(key)
+    else:
+        return key
 def findInTable(sheet,key):
+    key = replaceByDict(key)
+    print('key is '+str(key))
     srcrows = sheet.nrows
     srccols = sheet.ncols
     for r in range(0,srcrows):
         for c in range(0,srccols):
             similarity = fz.ratio(str(sheet.cell_value(r,c)),key)
-            if similarity > 80:
+            if similarity > 95:
                 print('similarity is '+str(similarity))
                 # print('cell value next to num = '+str(sheet.cell_value(r,c+1)))
                 # print('found label '+key+' position is '+str(r)+' '+str(c))
